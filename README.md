@@ -1,2 +1,3 @@
 # 433_REPOS
-433
+## Link to Homework 1
+https://github.com/ndm736/ME433_2018/wiki/HW1
