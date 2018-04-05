@@ -54,14 +54,21 @@ int main() {
     DDPCONbits.JTAGEN = 0;
 
     // do your TRIS and LAT commands here
-    TRISA = 0b0<<4;
-    LATAbits.LATA4 = 1;
+    TRISA = 0b0<<4; // INIT A4 to output
+    LATAbits.LATA4 = 1; //HIGH
+    TRISB = 0b1<<4; // INIT B4 to input
+    
     
 
     __builtin_enable_interrupts();
+    _CP0_SET_COUNT(0);
 
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
+        if(_CP0_GET_COUNT()> (48000000/2)){
+            LATAINV=0b1<<4; //toggle pin 4
+            _CP0_SET_COUNT(0);
+        }
     }
 }
