@@ -36,6 +36,7 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
+void delay(void);
 
 int main() {
 
@@ -66,9 +67,21 @@ int main() {
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
-        if(_CP0_GET_COUNT()> (48000000/2)){
+        if(_CP0_GET_COUNT()> (48000000/2)/(2*1000)){
             LATAINV=0b1<<4; //toggle pin 4
-            _CP0_SET_COUNT(0);
+            _CP0_SET_COUNT(0); // reset count
+        }
+        while(!PORTBbits.RB4) {
+            ;   // Pin D7 is the USER switch, low (FALSE) if pressed.
         }
     }
+}
+
+void delay(void) {
+  _CP0_SET_COUNT(0);
+  while(_CP0_GET_COUNT()< (48000000/2)){
+    while(!PORTBbits.RB4) {
+        ;   // Pin D7 is the USER switch, low (FALSE) if pressed.
+    }
+  }
 }
