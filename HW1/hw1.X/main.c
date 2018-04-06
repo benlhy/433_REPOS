@@ -25,7 +25,7 @@
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
 #pragma config FPLLIDIV = DIV_2 // divide input clock to be in range 4-5MHz
 #pragma config FPLLMUL = MUL_24 // multiply clock after FPLLIDIV
-#pragma config FPLLODIV = DIV_2 // divide clock after FPLLMUL to get 48MHz
+#pragma config FPLLODIV = DIV_2 // divide clock after FPLLMUL to get 8/2*24/2 = 48MHz
 #pragma config UPLLIDIV = DIV_2 // divider for the 8MHz input clock, then multiplied by 12 to get 48MHz for USB
 #pragma config UPLLEN = ON // USB clock on
 
@@ -72,7 +72,7 @@ int main() {
             _CP0_SET_COUNT(0); // reset count
         }
         while(!PORTBbits.RB4) {
-            ;   // Pin D7 is the USER switch, low (FALSE) if pressed.
+            ;   // Pin B4 is the USER switch, low (FALSE) if pressed.
         }
     }
 }
