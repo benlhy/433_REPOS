@@ -36,6 +36,59 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
+
+void spiConfig(void){
+    TRISB=0b0<<15; // init A4
+    LATBbits.LATB15=1; // set LAT4
+    
+    // Pick A1 -> SDO 1
+    // Pick B8 -> SDI 1
+    // Pick B15 -> SS 1
+    SS1Rbits.SS1R = 0b0011;
+    SDI1Rbits.SDI1R = 0b0100;
+    RPA1Rbits.RPA1R = 0b011;
+    
+    SPI1CONbits.ON=0;// Turn off SPI
+    SPI1BUF=0; // clear the buffer
+    SPI1BRG=1; // What is the peripheral bus clock?
+    // Fsck = Fpb/(2*(SPI1BRG+1))
+    // Fsck = 48Mhz/(2*(1+1)) = 12Mhz
+    SPI1CONbits.SSEN=0; // Pin controlled by port function
+    SPI1CONbits.ON=1; // Turn on SPI
+}
+
+char SPI1_IO(char write){
+    LATBbits.LATB15=0; // down
+    SPI1BUF = write;
+    while(!SPI1STATbits.SPIRBF);
+    LATBbits.LATB15=1; // up
+    return SPI1BUF;
+}
+
+void setVoltage(char channel, char voltage){
+    int i;
+    char output[8];
+    for (i=0;i<8;i++){
+        output[i]=(voltage>>i) & 1;
+    }
+    uint16_t carrier;
+    if (channel == 'A'){
+        carrier=0b0<<15;
+    }
+    else if (channel == 'B'){
+        carrier==0b1<<15;
+    }
+    carrier = carrier | 0b0<<14; // Unbuffered
+    carrier = carrier | 0b1<<13; // Output gain 1
+    carrier = carrier | 0b1 <<12; // Active mode
+    carrier = carrier | channel << 4; // shift 4
+    LATBbits.LATB15=0;
+    SPI1BUF = carrier;
+     while(!SPI1STATbits.SPIRBF);
+    LATBbits.LATB15=1; // up
+    
+}
+
 void delay(void);
 
 int main() {
@@ -67,7 +120,7 @@ int main() {
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
-        if(_CP0_GET_COUNT()> (48000000/2)/(2*1000)){
+        if(_CP0_GET_COUNT()> (48000000/2)/(2*1000)){ // 1kHz
             LATAINV=0b1<<4; //toggle pin 4
             _CP0_SET_COUNT(0); // reset count
         }

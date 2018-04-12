@@ -1,0 +1,13 @@
+G04 Gerber job file.*
+%TF.FileFunction,JobInfo*%
+%TF.GenerationSoftware,Autodesk,EAGLE,8.7.1*%
+%TF.CreationDate,2018-04-12T17:58:56Z*%
+%TF.Part,Single*%
+%MOMM*%
+%TJ.B_Owner,Joker Han <joker@u.northwestern.edu>*%
+%TJ.B_ID,firefly2*%
+%TJ.B_LayerNum,2*%
+%TJ.B_Thickness,1.570000*%
+%TJ.B_Size_X,50.434241*%
+%TJ.B_Size_Y,49.520000*%
+M02*
