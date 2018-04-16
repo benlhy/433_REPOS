@@ -38,31 +38,40 @@
 
 
 void spiConfig(void){
-    TRISB=0b0<<15; // init A4
-    LATBbits.LATB15=1; // set LAT4
+    ANSELA = 0;
+    ANSELB = 0;
+    TRISB=0b0<<15; // init B15
+    LATBbits.LATB15=1; // set LAT15
+    LATBbits.LATB15=0; // Low to enable data
     
     // Pick A1 -> SDO 1
     // Pick B8 -> SDI 1
     // Pick B15 -> SS 1
-    SS1Rbits.SS1R = 0b0011;
-    SDI1Rbits.SDI1R = 0b0100;
-    RPA1Rbits.RPA1R = 0b011;
+    // SS1Rbits.SS1R = 0b0011; we don't even use this..
+    SDI1Rbits.SDI1R = 0b0100; // SDI - 
+    RPA1Rbits.RPA1R = 0b0011; // SDO - > don't use this
     
-    SPI1CONbits.ON=0;// Turn off SPI
-    SPI1BUF=0; // clear the buffer
+    SPI1CON =0;// Turn off SPI
+    SPI1BUF; // clear the buffer
     SPI1BRG=1; // What is the peripheral bus clock?
+    SPI1STATbits.SPIROV = 0;
+    SPI1CONbits.MODE32=0;
+    SPI1CONbits.MODE16=1;
+    SPI1CONbits.MSTEN=1;
     // Fsck = Fpb/(2*(SPI1BRG+1))
     // Fsck = 48Mhz/(2*(1+1)) = 12Mhz
-    SPI1CONbits.SSEN=0; // Pin controlled by port function
+    SPI1CONbits.MSSEN=0; // Pin controlled by port function
     SPI1CONbits.ON=1; // Turn on SPI
 }
 
-char SPI1_IO(char write){
+void spiSend(char write){
     LATBbits.LATB15=0; // down
-    SPI1BUF = write;
-    while(!SPI1STATbits.SPIRBF);
-    LATBbits.LATB15=1; // up
-    return SPI1BUF;
+    SPI1BUF = write; // just send and forget
+    //while(!SPI1STATbits.SPIRBF){;} // wait until we receive data?
+    //SPI1BUF; // Ignore garbage
+    //SPI1BUF = 5; //Write garbage
+    //LATBbits.LATB15=1; // up
+    //return SPI1BUF;
 }
 
 void setVoltage(char channel, char voltage){
@@ -72,20 +81,23 @@ void setVoltage(char channel, char voltage){
         output[i]=(voltage>>i) & 1;
     }
     uint16_t carrier;
+    
     if (channel == 'A'){
         carrier=0b0<<15;
     }
     else if (channel == 'B'){
-        carrier==0b1<<15;
+        carrier=0b1<<15;
     }
     carrier = carrier | 0b0<<14; // Unbuffered
     carrier = carrier | 0b1<<13; // Output gain 1
     carrier = carrier | 0b1 <<12; // Active mode
-    carrier = carrier | channel << 4; // shift 4
-    LATBbits.LATB15=0;
+    carrier = carrier | voltage << 4; // shift 4 because last 4 bits are ignored
+    LATBbits.LATB15=0; // Low to enable data
     SPI1BUF = carrier;
-     while(!SPI1STATbits.SPIRBF);
-    LATBbits.LATB15=1; // up
+    //while(!SPI1STATbits.SPIRBF);
+    LATAINV=0b1<<4; //toggle pin 4
+    carrier = SPI1BUF;
+    //LATBbits.LATB15=1; // up
     
 }
 
@@ -109,18 +121,25 @@ int main() {
 
     // do your TRIS and LAT commands here
     TRISA = 0b0<<4; // INIT A4 to output
+    //TRISB = 0b0<<14; // RB14 - SCK
+    //TRISB = 0b0<<8; // RB8 MOSI
+    //TRISB = 0b0<<15; // RB15 - CS
     LATAbits.LATA4 = 1; //HIGH
+    
     TRISB = 0b1<<4; // INIT B4 to input
+    spiConfig();
     
     
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
+    //
+    SPI1_IO('A');
 
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
-        if(_CP0_GET_COUNT()> (48000000/2)/(2*1000)){ // 1kHz
+        if(_CP0_GET_COUNT()> (48000000/2)/(2*1)){ // 1kHz
             LATAINV=0b1<<4; //toggle pin 4
             _CP0_SET_COUNT(0); // reset count
         }
