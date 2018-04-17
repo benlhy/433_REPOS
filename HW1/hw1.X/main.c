@@ -42,7 +42,7 @@ void spiConfig(void){
     ANSELB = 0;
     TRISB=0b0<<15; // init B15
     LATBbits.LATB15=1; // set LAT15
-    LATBbits.LATB15=0; // Low to enable data
+
     
     // Pick A1 -> SDO 1
     // Pick B8 -> SDI 1
@@ -75,11 +75,8 @@ void spiSend(char write){
 }
 
 void setVoltage(char channel, char voltage){
-    int i;
-    char output[8];
-    for (i=0;i<8;i++){
-        output[i]=(voltage>>i) & 1;
-    }
+    SPI1BUF; // read to clear data
+    LATBbits.LATB15=0; // Low to enable data
     uint16_t carrier;
     
     if (channel == 'A'){
@@ -88,17 +85,10 @@ void setVoltage(char channel, char voltage){
     else if (channel == 'B'){
         carrier=0b1<<15;
     }
-    carrier = carrier | 0b0<<14; // Unbuffered
-    carrier = carrier | 0b1<<13; // Output gain 1
-    carrier = carrier | 0b1 <<12; // Active mode
-    carrier = carrier | voltage << 4; // shift 4 because last 4 bits are ignored
-    LATBbits.LATB15=0; // Low to enable data
+    carrier = carrier | 0b111<<12 | voltage <<4; // Unbuffered
     SPI1BUF = carrier;
-    //while(!SPI1STATbits.SPIRBF);
-    LATAINV=0b1<<4; //toggle pin 4
-    carrier = SPI1BUF;
-    //LATBbits.LATB15=1; // up
-    
+    while(!SPI1STATbits.SPIRBF);
+    LATBbits.LATB15=1; // up!
 }
 
 void delay(void);
@@ -121,31 +111,82 @@ int main() {
 
     // do your TRIS and LAT commands here
     TRISA = 0b0<<4; // INIT A4 to output
+    TRISB = 0b0 << 15;
     //TRISB = 0b0<<14; // RB14 - SCK
     //TRISB = 0b0<<8; // RB8 MOSI
     //TRISB = 0b0<<15; // RB15 - CS
     LATAbits.LATA4 = 1; //HIGH
+    LATBbits.LATB15 = 0; // LOW
     
     TRISB = 0b1<<4; // INIT B4 to input
-    spiConfig();
+    ANSELA = 0;
+    ANSELB = 0;
+    SS1Rbits.SS1R = 0b0011;
+    SDI1Rbits.SDI1R = 0b0100;
+    RPA1Rbits.RPA1R = 0b0011;
+
+
+    
     
     
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
     //
-    SPI1_IO('A');
+    //SPI1_IO('A');
+    //setVoltage('A',128);
+    SPI1BUF;
+    SPI1BRG=0x4;
+    SPI1STATbits.SPIROV = 0;
+    SPI1CONbits.MODE32=0;
+    SPI1CONbits.MODE16=1;
+    SPI1CONbits.MSTEN=1;
+    SPI1CONbits.MSSEN=0; // Pin controlled by port function
+    SPI1CONbits.ON = 1;
+    
+    
+    setVoltage('B',128);
+    setVoltage('A',30);
+    
+    /*
+    LATBbits.LATB15 = 0; // LOW
+    SPI1BUF = 0| 0b11111111<<4 | 0b1111<<12;
+    while(!SPI1STATbits.SPIRBF);
+    LATBbits.LATB15 = 1; // HIGH
+    
+    SPI1BUF;
+    
+    LATBbits.LATB15 = 0; // LOW
+    SPI1BUF = 0| 0b11111111<<4 | 0b0111<<12;
+    while(!SPI1STATbits.SPIRBF);
+    LATBbits.LATB15 = 1; // HIGH
+    */
+    int index = 0;
+    int increment = 1;
 
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
-        if(_CP0_GET_COUNT()> (48000000/2)/(2*1)){ // 1kHz
-            LATAINV=0b1<<4; //toggle pin 4
+        
+        if(_CP0_GET_COUNT()> (48000000/2)/(2*1000)){ // 1kHz
+            
+            setVoltage('A',index);
+            
+            if (index<0 || index>128){
+                increment = -increment;
+            }
+            index = index + increment;
+            
+
+            
+            
+            //LATAINV=0b1<<4; //toggle pin 4
             _CP0_SET_COUNT(0); // reset count
         }
-        while(!PORTBbits.RB4) {
-            ;   // Pin B4 is the USER switch, low (FALSE) if pressed.
-        }
+        
+        //while(!PORTBbits.RB4) {
+        //    ;   // Pin B4 is the USER switch, low (FALSE) if pressed.
+        //}
     }
 }
 
