@@ -182,32 +182,24 @@ int main() {
         _CP0_SET_COUNT(0); // reset count
         
         
-        float f = 512.0 + 511.0*sin(i*2.0*3.14/4000.0);
-        setVoltage(0,(int)f);
-        float tri =  coeff/4000.0*1023.0;
+        float f = 512.0 + 511.0*sin(i*2.0*3.14/100.0);
+        setVoltage(0,(int)f); // supposedly voutA
+        float tri =  coeff/100.0*1023.0;
         
         i++;
         coeff = i;
-        if(i>8000){
+        if(i>200){
             i = 0;
             coeff = i;
         }
-        else if (i>3999){
-            coeff = 8000-i;
+        else if (i>99){
+            coeff = 200-i;
         }
-        setVoltage(1,(int)tri);
+        setVoltage(1,(int)tri); // supposedly voutb
         LATAINV=0b1<<4; //toggle pin 4
         
-        if(_CP0_GET_COUNT()> (48000000/2)/(1000)){ // 1kHz
-            
-           
-            
-            
-            
-            
-
-            
-            
+        while(_CP0_GET_COUNT() < (48000000/2)/(1000)){ // 1kHz
+            // do nothing.
             
             
         }
