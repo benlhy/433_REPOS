@@ -37,19 +37,6 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
-void initExpander(){
-    I2C2BRG = 390; // I2C2BRG = [1/(2*Fsck)-PGD]*PBlck -2
-    I2C2CONbits.ON = 1; // turn on
-}
-
-void setExpander(char pin, char level){
-    
-}
-
-void getExpander(){
-    
-}
-
 
 void spiConfig(void){
     ANSELA = 0;
@@ -99,6 +86,7 @@ void setVoltage(char channel, int voltage){
     int bitvalue = channel<<15;
     bitvalue = bitvalue | 0b0111000000000000;
     bitvalue = bitvalue | ((voltage&0b1111111111)<<2);
+    
    
     spiSend(bitvalue>>8);
     spiSend(bitvalue);
