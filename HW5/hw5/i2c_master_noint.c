@@ -5,8 +5,8 @@ void initExpander(){
     ANSELBbits.ANSB2 = 0;
     ANSELBbits.ANSB3 = 0;
     i2c_master_setup();
-    writeExpander(0x00,0b11110000);
-    writeExpander(0x0A,0b00001111);
+    //writeExpander(0x00,0b11110000);
+    //writeExpander(0x0A,0b00001111);
             
     //I2C2BRG = 50; // I2C2BRG = [1/(2*Fsck)-PGD]*PBlck -2
     //I2C2CONbits.ON = 1; // turn on
@@ -24,9 +24,10 @@ void writeExpander(unsigned char reg, unsigned char val){
 
 unsigned char readExpander(){
     i2c_master_start(); 
+    i2c_master_send(ADDR<<1|0);
     i2c_master_send(0x09);
     i2c_master_restart(); // restart
-    i2c_master_send(ADDR<<1|1);
+    i2c_master_send(ADDR<<1|1); // 
     unsigned char r = i2c_master_recv();
     i2c_master_ack(1); // done
     i2c_master_stop();
@@ -66,7 +67,7 @@ void i2c_master_send(unsigned char byte) { // send a byte to slave
 unsigned char i2c_master_recv(void) { // receive a byte from the slave
     I2C2CONbits.RCEN = 1;             // start receiving data
     while(!I2C2STATbits.RBF) { ; }    // wait to receive the data
-    return I2C1RCV;                   // read and return the data
+    return I2C2RCV;                   // read and return the data
 }
 
 void i2c_master_ack(int val) {        // sends ACK = 0 (slave should send another byte)

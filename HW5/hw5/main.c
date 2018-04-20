@@ -68,11 +68,7 @@ int main() {
     LATBbits.LATB15 = 0; // LOW
     
     TRISB = 0b1<<4; // INIT B4 to input
-    //ANSELA = 0;
-    //ANSELB = 0;
-    SS1Rbits.SS1R = 0b0011;
-    SDI1Rbits.SDI1R = 0b0100;
-    RPA1Rbits.RPA1R = 0b0011;
+
 
 
     
@@ -82,10 +78,10 @@ int main() {
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
     initExpander();
-    writeExpander(0,0b00001111); // set 7 to 4 as outputs, 3-0 as inputs
-    writeExpander(9,0b11110000); // set all outputs to high
+    writeExpander(0,0b11110000); // 7-4 as inputs,3 to 0 as outputs, 
+    writeExpander(10,0b00000000); // set all outputs to low
     
-    
+    int i = 0;
 
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
@@ -95,8 +91,25 @@ int main() {
         
 
         LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+        /*unsigned char readed = readExpander();
         
-        while(_CP0_GET_COUNT() < (48000000/2)/(10)){ // 1kHz
+        if(readed>>7==1){ // if 7 is high
+            writeExpander(10,0b00000001);
+        }
+        else if(readed>>7==0){
+            writeExpander(10,0b00000000);
+        }*/
+        unsigned char readed = readExpander();
+        if (readed>>7==0){
+            writeExpander(0x09,0b00000001);
+            
+        }
+        else  {
+            writeExpander(0x09,0b00000000);
+            
+        }
+        
+        while(_CP0_GET_COUNT() < (48000000/2)/(2*10)){ // 1kHz
             // do nothing.
             
             
