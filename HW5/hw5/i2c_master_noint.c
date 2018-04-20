@@ -30,6 +30,7 @@ unsigned char readi2c(){
     unsigned char r = i2c_master_recv();
     i2c_master_ack(1); // done
     i2c_master_stop();
+    return r; // return what we read
 }
 
 // I2C Master utilities, 100 kHz, using polling rather than interrupts

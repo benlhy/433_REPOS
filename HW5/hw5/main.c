@@ -80,70 +80,19 @@ int main() {
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
-    //
-    //SPI1_IO('A');
-    //setVoltage('A',128);
-    SPI1CON=0;
-    SPI1BUF;
-    SPI1BRG=0x1;
-    SPI1STATbits.SPIROV = 0;
-    SPI1CONbits.MODE32=0;
-    SPI1CONbits.MODE16=0;
-    SPI1CONbits.CKE = 1;
-    SPI1CONbits.MSTEN=1;
-    SPI1CONbits.MSSEN=0; // Pin controlled by port function
-    SPI1CONbits.ON = 1;
     
     
-    //setVoltage('B',0);
-    //setVoltage('A',1022);
-    
-    /*
-    LATBbits.LATB15 = 0; // LOW
-    SPI1BUF = 0| 0b1111<<13 | 512<<3 ;
-    while(!SPI1STATbits.SPIRBF);
-    LATBbits.LATB15 = 1; // HIGH
-    
-    SPI1BUF;
-    
-    LATBbits.LATB15 = 0; // LOW
-    SPI1BUF = 0| 0b0111<<13 | 1023<<3 ; // A (by datasheet) -  but channel 2?? so probably B?
-    while(!SPI1STATbits.SPIRBF);
-    LATBbits.LATB15 = 1; // HIGH
-    
-    SPI1BUF;
-    
-    int index = 0;
-    int increment = 1;
-    */
 
-    
-    int i = 0;
-    
-    int coeff = 0;
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0); // reset count
         
         
-        float f = 512.0 + 511.0*sin(i*2.0*3.14/100.0);
-        setVoltage(0,(int)f); // supposedly voutA
-        float tri =  coeff/100.0*1023.0;
+
+        LATAINV=0b1<<4; //toggle pin 4 as heartbeat
         
-        i++;
-        coeff = i;
-        if(i>200){
-            i = 0;
-            coeff = i;
-        }
-        else if (i>99){
-            coeff = 200-i;
-        }
-        setVoltage(1,(int)tri); // supposedly voutb
-        LATAINV=0b1<<4; //toggle pin 4
-        
-        while(_CP0_GET_COUNT() < (48000000/2)/(1000)){ // 1kHz
+        while(_CP0_GET_COUNT() < (48000000/2)/(10)){ // 1kHz
             // do nothing.
             
             
