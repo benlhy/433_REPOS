@@ -116,8 +116,7 @@ int main() {
     int index = 0;
     int increment = 1;
     */
-    setVoltage(1,255);
-    setVoltage(0,512);
+
     
     int i = 0;
     
