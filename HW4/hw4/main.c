@@ -222,11 +222,3 @@ int main() {
     }
 }
 
-void delay(void) {
-  _CP0_SET_COUNT(0);
-  while(_CP0_GET_COUNT()< (48000000/2)){
-    while(!PORTBbits.RB4) {
-        ;   // Pin D7 is the USER switch, low (FALSE) if pressed.
-    }
-  }
-}
