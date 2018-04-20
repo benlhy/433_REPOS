@@ -14,7 +14,7 @@ void initExpander(){
 
 #define ADDR 0b0100000
 
-void writei2c(unsigned char reg, unsigned char val){
+void writeExpander(unsigned char reg, unsigned char val){
     i2c_master_start(); // send start bit
     i2c_master_send(ADDR<<1|0); // tell it we are talking to it
     i2c_master_send(reg); // tell which register we are changing
@@ -22,7 +22,7 @@ void writei2c(unsigned char reg, unsigned char val){
     i2c_master_stop(); // send stop bit
 }
 
-unsigned char readi2c(){
+unsigned char readExpander(){
     i2c_master_start(); 
     i2c_master_send(0x09);
     i2c_master_restart(); // restart

@@ -1,6 +1,7 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
 #include <math.h>
+#include "i2c_master_noint.h"
 
 // DEVCFG0
 #pragma config DEBUG = OFF // no debugging
@@ -80,6 +81,9 @@ int main() {
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
+    i2c_master_setup();
+    writeExpander(0,0b00001111); // set 7 to 4 as outputs, 3-0 as inputs
+    writeExpander(9,0b11110000); // set all outputs to high
     
     
 
