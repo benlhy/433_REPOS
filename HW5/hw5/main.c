@@ -81,7 +81,7 @@ int main() {
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
-    i2c_master_setup();
+    initExpander();
     writeExpander(0,0b00001111); // set 7 to 4 as outputs, 3-0 as inputs
     writeExpander(9,0b11110000); // set all outputs to high
     

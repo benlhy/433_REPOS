@@ -5,8 +5,8 @@ void initExpander(){
     ANSELBbits.ANSB2 = 0;
     ANSELBbits.ANSB3 = 0;
     i2c_master_setup();
-    writei2c(0x00,0b11110000);
-    writei2c(0x0A,0b00001111);
+    writeExpander(0x00,0b11110000);
+    writeExpander(0x0A,0b00001111);
             
     //I2C2BRG = 50; // I2C2BRG = [1/(2*Fsck)-PGD]*PBlck -2
     //I2C2CONbits.ON = 1; // turn on
