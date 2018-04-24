@@ -1,7 +1,7 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
 #include <math.h>
-#include "i2c_master_noint.h"
+#include "ST7735.h"
 
 // DEVCFG0
 #pragma config DEBUG = OFF // no debugging
@@ -60,55 +60,29 @@ int main() {
 
     // do your TRIS and LAT commands here
     TRISA = 0b0<<4; // INIT A4 to output
-    TRISB = 0b0 << 15;
-    //TRISB = 0b0<<14; // RB14 - SCK
-    //TRISB = 0b0<<8; // RB8 MOSI
-    //TRISB = 0b0<<15; // RB15 - CS
+    
+
     LATAbits.LATA4 = 0; //HIGH
-    LATBbits.LATB15 = 0; // LOW
+    
     
     TRISB = 0b1<<4; // INIT B4 to input
-
-
-
-    
-    
+    LCD_init();
     
 
     __builtin_enable_interrupts();
     _CP0_SET_COUNT(0);
-    initExpander();
-    writeExpander(0,0b11110000); // 7-4 as inputs,3 to 0 as outputs, 
-    writeExpander(10,0b00000000); // set all outputs to low
-    
-    int i = 0;
+
+ 
 
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0); // reset count
         
-        
+        LCD_drawPixel(10,10,WHITE);
 
         LATAINV=0b1<<4; //toggle pin 4 as heartbeat
-        /*unsigned char readed = readExpander();
-        
-        if(readed>>7==1){ // if 7 is high
-            writeExpander(10,0b00000001);
-        }
-        else if(readed>>7==0){
-            writeExpander(10,0b00000000);
-        }*/
-        unsigned char readed = readExpander();
-        if (readed>>7==0){
-            writeExpander(0x09,0b00000001);
-            
-        }
-        else  {
-            writeExpander(0x09,0b00000000);
-            
-        }
-        
+
         while(_CP0_GET_COUNT() < (48000000/2)/(2*10)){ // 1kHz
             // do nothing.
             
