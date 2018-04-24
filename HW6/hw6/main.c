@@ -1,6 +1,7 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
 #include <math.h>
+#include <stdio.h>
 #include "ST7735.h"
 
 // DEVCFG0
@@ -38,8 +39,53 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
+#define MAX_X 152
+#define MAX_Y 120
 
 
+void drawProgressBar(short x, short y, short h, int len1, short c1, int len2, short c2){
+    int i;
+    for (i=0;i<len1;i++){
+        int j;
+        for (j=0;j<h;j++){
+            LCD_drawPixel(x+i,y+j,c1);
+        }
+    }
+    for (i=len1;i<len2;i++){
+        int j;
+        for (j=0;j<h;j++){
+            LCD_drawPixel(x+i,y+j,c2);
+        }
+    }
+}
+
+void drawString(short x, short y, char* str, short fg, short bg){
+    int i = 0;
+    while(str[i]){
+        drawChar(x+5*i,y,str[i],fg,bg);
+        i++;
+    }
+}
+
+
+void drawChar(short x, short y, unsigned char c, short fg, short bg){
+    char row = c - 0x20;
+    int i;
+    if ((MAX_X-x>7)&&(MAX_Y-y>7)){
+        for(i=0;i<5;i++){
+            char pixels = ASCII[row][i]; // so we have a list of pixies to go through
+            int j;
+            for(j=0;j<8;j++){
+                if ((pixels>>j)&1==1){
+                    LCD_drawPixel(x+i,y+j,fg);
+                }
+                else {
+                    LCD_drawPixel(x+i,y+j,bg);
+                }
+            }
+        }
+    }
+}
 
 
 int main() {
@@ -65,27 +111,44 @@ int main() {
     LATAbits.LATA4 = 0; //HIGH
     
     
-    TRISB = 0b1<<4; // INIT B4 to input
-    
+    //TRISB = 0b1<<4; // INIT B4 to input
+    SPI1_init();
     
 
     __builtin_enable_interrupts();
+    
+    char output[30];
+    sprintf(output,"q=%d",45);
+    
     LCD_init();
+    
+    LCD_clearScreen(BLUE);
     _CP0_SET_COUNT(0);
-
- 
-
+    //drawChar(0,0,'c',WHITE,BLUE);
+    //drawString(10,8,output,WHITE,BLUE);
+    //drawProgressBar(0,16,8,20,YELLOW,40,RED);
+    
+    int val=0;
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0); // reset count
-        
-        LCD_clearScreen(YELLOW);
+        output[0]='\0';
+     
+        sprintf(output,"Hello World %d!  ",val);
+        drawString(10,24,output,WHITE,BLUE);
+        drawProgressBar(10,32,8,val,YELLOW,100,RED);
+        val++;
+        if (val>100){
+            val = 0;
+        }
 
         LATAINV=0b1<<4; //toggle pin 4 as heartbeat
 
-        while(_CP0_GET_COUNT() < (48000000/2)/(2*10)){ // 1kHz
+        while(_CP0_GET_COUNT() < (48000000/2)/(10)){ // 10Hz
             // do nothing.
+            
+            
             
             
         }
@@ -95,3 +158,5 @@ int main() {
         //}
     }
 }
+
+

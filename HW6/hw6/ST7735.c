@@ -68,7 +68,7 @@ void LCD_data16(unsigned short dat) {
 }
 
 void LCD_init() {
-    SPI1_init();
+    //SPI1_init();
   int time = 0;
   LCD_command(ST7735_SWRESET);//software reset
   time = _CP0_GET_COUNT();
