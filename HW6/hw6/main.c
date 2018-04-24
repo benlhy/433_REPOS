@@ -66,10 +66,11 @@ int main() {
     
     
     TRISB = 0b1<<4; // INIT B4 to input
-    LCD_init();
+    
     
 
     __builtin_enable_interrupts();
+    LCD_init();
     _CP0_SET_COUNT(0);
 
  
@@ -79,7 +80,7 @@ int main() {
 	// remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0); // reset count
         
-        LCD_drawPixel(10,10,WHITE);
+        LCD_clearScreen(YELLOW);
 
         LATAINV=0b1<<4; //toggle pin 4 as heartbeat
 
