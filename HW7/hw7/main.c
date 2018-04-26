@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "ST7735.h"
+#include "i2c_master_noint.h"
 
 // DEVCFG0
 #pragma config DEBUG = OFF // no debugging
