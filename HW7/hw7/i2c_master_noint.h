@@ -2,8 +2,8 @@
 #define I2C_MASTER_NOINT_H__
 // Header file for i2c_master_noint.c
 // helps implement use I2C1 as a master without using interrupts
-void initExpander();
-void writeExpander(unsigned char r, unsigned char c);
+void i2c_init();
+void i2c_write(unsigned char r, unsigned char c);
 unsigned char readExpander(void);
 void i2c_master_setup(void);              // set up I2C 1 as a master, at 100 kHz
 

@@ -1,7 +1,7 @@
 #include<xc.h>
 #include "i2c_master_noint.h"
 
-void initExpander(){
+void i2c_init(){
     ANSELBbits.ANSB2 = 0;
     ANSELBbits.ANSB3 = 0;
     i2c_master_setup();
@@ -11,10 +11,17 @@ void initExpander(){
     //I2C2BRG = 50; // I2C2BRG = [1/(2*Fsck)-PGD]*PBlck -2
     //I2C2CONbits.ON = 1; // turn on
 }
+/*
+ This function configures the registers for operation
+ */
+void imu_init(){
+    
+}
 
-#define ADDR 0b0100000
 
-void writeExpander(unsigned char reg, unsigned char val){
+#define ADDR 0b1101011 // address of our imu
+
+void i2c_write(unsigned char reg, unsigned char val){
     i2c_master_start(); // send start bit
     i2c_master_send(ADDR<<1|0); // tell it we are talking to it
     i2c_master_send(reg); // tell which register we are changing
@@ -25,7 +32,7 @@ void writeExpander(unsigned char reg, unsigned char val){
 unsigned char readExpander(){
     i2c_master_start(); 
     i2c_master_send(ADDR<<1|0);
-    i2c_master_send(0x09);
+    i2c_master_send(0x09); // what to read
     i2c_master_restart(); // restart
     i2c_master_send(ADDR<<1|1); // 
     unsigned char r = i2c_master_recv();
