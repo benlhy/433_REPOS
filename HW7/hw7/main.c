@@ -119,11 +119,26 @@ int main() {
     __builtin_enable_interrupts();
     
     char output[30];
-    sprintf(output,"q=%d",45);
+    
     
     LCD_init();
     
     LCD_clearScreen(BLUE);
+    i2c_init();
+    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+    i2c_write(0x10,0b10000010); // turn on, 2g, 100Hz filter
+    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+    i2c_write(0x11,0b10001000); // gyro, 1000dps
+    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+    i2c_write(0x12,0b00000100);
+    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+    
+    
+    //imu_init();
+    
+    while (i2c_read_one(0x0F)!=105){ // reads the WHOAMI register
+        ; //hang
+    }
     _CP0_SET_COUNT(0);
     //drawChar(0,0,'c',WHITE,BLUE);
     //drawString(10,8,output,WHITE,BLUE);
