@@ -15,7 +15,11 @@ void i2c_init(){
  This function configures the registers for operation
  */
 void imu_init(){
-    
+    i2c_init();
+    i2c_write(0x10,0b10000010); // turn on, 2g, 100Hz filter
+    i2c_write(0x11,0b10001000); // gyro, 1000dps
+    i2c_write(0x12,0b00000100);
+    // check who am I register
 }
 
 
@@ -29,10 +33,10 @@ void i2c_write(unsigned char reg, unsigned char val){
     i2c_master_stop(); // send stop bit
 }
 
-unsigned char readExpander(){
+unsigned char i2c_read_one(unsigned char reg){
     i2c_master_start(); 
     i2c_master_send(ADDR<<1|0);
-    i2c_master_send(0x09); // what to read
+    i2c_master_send(reg); // what to read
     i2c_master_restart(); // restart
     i2c_master_send(ADDR<<1|1); // 
     unsigned char r = i2c_master_recv();

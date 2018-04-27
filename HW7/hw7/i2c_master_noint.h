@@ -4,7 +4,7 @@
 // helps implement use I2C1 as a master without using interrupts
 void i2c_init();
 void i2c_write(unsigned char r, unsigned char c);
-unsigned char readExpander(void);
+unsigned char i2c_read_one(unsigned char r);
 void i2c_master_setup(void);              // set up I2C 1 as a master, at 100 kHz
 
 void i2c_master_start(void);              // send a START signal
