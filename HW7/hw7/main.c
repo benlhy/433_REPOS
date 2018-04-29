@@ -43,6 +43,40 @@
 #define MAX_X 152
 #define MAX_Y 120
 
+#define IMU_ADDR 0b1101011
+#define MULTIPLIER 19.62
+
+/*
+ * len goes from -50 to 50
+ */
+void drawXBar(short x, short y, short h, int len, int c1, int c2){
+    int i;
+    // if len is negative, start drawing from negative to center
+    if (len < 0){
+        drawProgressBar(x, y, h, 50+len, c2, 50, c1);// flip the colors
+        drawProgressBar(x+50,y, h,0,c1,50,c2);
+    }
+    else{
+        drawProgressBar(x,y,h,0,c1,50,c2);
+        drawProgressBar(x+50,y,h,len,c1,100,c2);
+    }
+}
+
+void drawProgressBarVert(short x, short y, short h, int len1, short c1, int len2, short c2){
+    int i;
+    for (i=0;i<len1;i++){
+        int j;
+        for (j=0;j<h;j++){
+            LCD_drawPixel(x+i,y+j,c1);
+        }
+    }
+    for (i=len1;i<len2;i++){
+        int j;
+        for (j=0;j<h;j++){
+            LCD_drawPixel(x+i,y+j,c2);
+        }
+    }
+}
 
 void drawProgressBar(short x, short y, short h, int len1, short c1, int len2, short c2){
     int i;
@@ -124,36 +158,74 @@ int main() {
     LCD_init();
     
     LCD_clearScreen(BLUE);
-    i2c_init();
-    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
-    i2c_write(0x10,0b10000010); // turn on, 2g, 100Hz filter
-    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
-    i2c_write(0x11,0b10001000); // gyro, 1000dps
-    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
-    i2c_write(0x12,0b00000100);
-    LATAINV=0b1<<4; //toggle pin 4 as heartbeat
+
     
     
-    //imu_init();
+    imu_init();
     
     while (i2c_read_one(0x0F)!=105){ // reads the WHOAMI register
         ; //hang
     }
+    unsigned char imu_data[14];
+
     _CP0_SET_COUNT(0);
     //drawChar(0,0,'c',WHITE,BLUE);
     //drawString(10,8,output,WHITE,BLUE);
     //drawProgressBar(0,16,8,20,YELLOW,40,RED);
     
-    int val=0;
+    int val=50;
+    int i;
     while(1) {
 	// use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 	// remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0); // reset count
+        
+        
+        i2c_read_multiple(IMU_ADDR,0x20,imu_data,14);
+        
+
+        
+        
+        /*
+        i2c_master_start(); 
+        i2c_master_send(IMU_ADDR<<1|0); // i want to send
+        i2c_master_send(0x20); // what to read
+        i2c_master_restart(); // restart
+        i2c_master_send(IMU_ADDR<<1|1); // i want to read
+        for (i=0;i<14;i++){
+            imu_data[i]=i2c_master_recv();
+            if (i<13){
+                i2c_master_ack(0);
+            }
+            else {
+                i2c_master_ack(1);
+            }
+        }
+        i2c_master_stop();  
+        */
+        output[0]='\0';
+        short temp = imu_data[0] | imu_data [1]<<8;
+        short gx = imu_data[2] | imu_data [3]<<8;
+        short gy = imu_data[4] | imu_data [5]<<8;
+        short gz = imu_data[6] | imu_data [7]<<8;
+        short ax = imu_data[8] | imu_data [9]<<8;
+        short ay = imu_data[10] | imu_data [11]<<8;
+        short az = imu_data[12] | imu_data [13]<<8;
+        
+        sprintf(output,"ax: %0.2f, ay: %0.2f    ",(float)ax/32768.0*MULTIPLIER,(float)ay/32768.0*MULTIPLIER);
+        drawString(10,8,output,WHITE,BLUE);
+        sprintf(output,"az: %0.2f   ",(float)az/32768.0*MULTIPLIER);
+        drawString(10,16,output,WHITE,BLUE);
+        sprintf(output,"gx: %0.2f, gy: %0.2f   ",(float)gx/32768.0*1000,(float)gy/32768.0*1000);
+        drawString(10,24,output,WHITE,BLUE);
+        sprintf(output,"gz: %0.2f   ",(float)gz/32768.0*1000);
+        drawString(10,32,output,WHITE,BLUE);
         output[0]='\0';
      
         sprintf(output,"Hello World %d!  ",val);
-        drawString(10,24,output,WHITE,BLUE);
-        drawProgressBar(10,32,8,val,YELLOW,100,RED);
+        drawString(10,40,output,WHITE,BLUE);
+        drawProgressBar(10,48,8,val,YELLOW,100,RED);
+        drawXBar(10,100,8,-40,YELLOW,RED);
         val++;
         if (val>100){
             val = 0;

@@ -45,6 +45,29 @@ unsigned char i2c_read_one(unsigned char reg){
     return r; // return what we read
 }
 
+void i2c_read_multiple(unsigned char addr, unsigned char reg, unsigned char * dat, int length) {
+    int i;
+    i2c_master_start(); 
+    i2c_master_send(addr<<1|0); // i want to send
+    i2c_master_send(reg); // what to read
+    i2c_master_restart(); // restart
+    i2c_master_send(addr<<1|1); // i want to read
+ 
+    
+    for(i = 0;i<length;i++){
+        dat[i] = i2c_master_recv();
+        if(i<(length-1)){
+            i2c_master_ack(0); // not done 
+        }
+        else {
+            i2c_master_ack(1); // done
+        }
+    }
+    i2c_master_stop();
+    
+}
+
+
 // I2C Master utilities, 100 kHz, using polling rather than interrupts
 // The functions must be callled in the correct order as per the I2C protocol
 // Change I2C1 to the I2C channel you are using
