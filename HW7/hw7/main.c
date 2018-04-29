@@ -252,7 +252,7 @@ int main() {
 
         LATAINV=0b1<<4; //toggle pin 4 as heartbeat
 
-        while(_CP0_GET_COUNT() < (48000000/2)/(10)){ // 10Hz
+        while(_CP0_GET_COUNT() < (48000000/2)/(20)){ // 10Hz
             // do nothing.
             
             
