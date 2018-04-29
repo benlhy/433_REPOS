@@ -49,8 +49,25 @@
 /*
  * len goes from -50 to 50
  */
-void drawXBar(short x, short y, short h, int len, int c1, int c2){
+void drawYBar(short x, short y, short h, int len, int c1, int c2){
     int i;
+    // if len is negative, start drawing from negative to center
+    if (len < 0){
+        drawProgressBarVert(x, y, h, 50+len, c2, 50, c1);// flip the colors
+        drawProgressBarVert(x,y+50, h,0,c1,50,c2);
+    }
+    else{
+        drawProgressBarVert(x,y,h,0,c1,50,c2);
+        drawProgressBarVert(x,y+50,h,len,c1,50,c2);
+    }
+}
+
+
+/*
+ * len goes from -50 to 50
+ */
+void drawXBar(short x, short y, short h, int len, int c1, int c2){
+    
     // if len is negative, start drawing from negative to center
     if (len < 0){
         drawProgressBar(x, y, h, 50+len, c2, 50, c1);// flip the colors
@@ -58,7 +75,7 @@ void drawXBar(short x, short y, short h, int len, int c1, int c2){
     }
     else{
         drawProgressBar(x,y,h,0,c1,50,c2);
-        drawProgressBar(x+50,y,h,len,c1,100,c2);
+        drawProgressBar(x+50,y,h,len,c1,50,c2);
     }
 }
 
@@ -67,13 +84,13 @@ void drawProgressBarVert(short x, short y, short h, int len1, short c1, int len2
     for (i=0;i<len1;i++){
         int j;
         for (j=0;j<h;j++){
-            LCD_drawPixel(x+i,y+j,c1);
+            LCD_drawPixel(x+j,y+i,c1);
         }
     }
     for (i=len1;i<len2;i++){
         int j;
         for (j=0;j<h;j++){
-            LCD_drawPixel(x+i,y+j,c2);
+            LCD_drawPixel(x+j,y+i,c2);
         }
     }
 }
@@ -162,7 +179,7 @@ int main() {
     
     
     imu_init();
-    
+    imu_calibrate();
     while (i2c_read_one(0x0F)!=105){ // reads the WHOAMI register
         ; //hang
     }
@@ -222,10 +239,12 @@ int main() {
         drawString(10,32,output,WHITE,BLUE);
         output[0]='\0';
      
-        sprintf(output,"Hello World %d!  ",val);
-        drawString(10,40,output,WHITE,BLUE);
-        drawProgressBar(10,48,8,val,YELLOW,100,RED);
-        drawXBar(10,100,8,-40,YELLOW,RED);
+        //sprintf(output,"Hello World %d!  ",val);
+        //drawString(10,40,output,WHITE,BLUE);
+        //drawProgressBar(10,48,8,val,YELLOW,100,RED);
+        drawXBar(14,100,8,(int)((-(float)ax/32768.0)*50),YELLOW,RED);
+        drawYBar(60,54,8,(int)((-(float)ay/32768.0)*50),YELLOW,RED);
+        //drawProgressBarVert(60,56,8,40,YELLOW,100,RED);
         val++;
         if (val>100){
             val = 0;

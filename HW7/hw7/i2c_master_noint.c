@@ -22,6 +22,10 @@ void imu_init(){
     // check who am I register
 }
 
+void imu_calibrate(){
+    ;
+}
+
 
 #define ADDR 0b1101011 // address of our imu
 
