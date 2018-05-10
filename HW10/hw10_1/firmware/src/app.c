@@ -95,8 +95,8 @@ float f_az;
 float MAF_value = 0;
 float FIR_value = 0;
 float IIR_value = 0;
-float iira = 0.8;
-float iirb = 0.2;
+float iirA = 0.8;
+float iirB = 0.2;
 int data_index = 0;
 int maf_index = 0;
 float dataArray[MAX_NUM_DATA_ARRAY]={0}; // zero array..
@@ -600,7 +600,7 @@ void APP_Tasks(void) {
                 ;
             }
             if ((sendDataFlag==1) && (dataCounter<100)){
-                    len = sprintf(dataOut, "%d %0.2f %0.2f %0.2f\r\n", 
+                    len = sprintf(dataOut, "%d %0.2f %0.2f % 0.2f %0.2f\r\n", 
                             dataCounter,
                             f_az,
                             MAF_value,
