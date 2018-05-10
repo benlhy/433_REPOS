@@ -92,8 +92,11 @@ short az;
 
 float f_az;
 
-float MAF_value;
-float FIR_value;
+float MAF_value = 0;
+float FIR_value = 0;
+float IIR_value = 0;
+float iira = 0.8;
+float iirb = 0.2;
 int data_index = 0;
 int maf_index = 0;
 float dataArray[MAX_NUM_DATA_ARRAY]={0}; // zero array..
@@ -201,7 +204,7 @@ USB_DEVICE_CDC_EVENT_RESPONSE APP_USBDeviceCDCEventHandler
 
         case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_DATA_RECEIVED:
 
-            /* The data stage of the last control transfer is
+            /* The data stage of the last control transfer is   
              * complete. For now we accept all the data */
 
             USB_DEVICE_ControlStatus(appDataObject->deviceHandle, USB_DEVICE_CONTROL_STATUS_OK);
@@ -560,6 +563,7 @@ void APP_Tasks(void) {
             // pick the last six values in dataArray
             int fir_index;
             int fir_ptr = data_index; // start the pointer here
+            FIR_value = 0;
             for(fir_index=0;fir_index<6;fir_index++){
                 if (fir_ptr>MAX_NUM_DATA_ARRAY){
                     fir_ptr = 0;
@@ -567,10 +571,10 @@ void APP_Tasks(void) {
                 else {
                     fir_ptr++;
                 }
-                firValue = firValue+firArray[fir_index]*dataArray[fir_ptr];
+                FIR_value = FIR_value+firArray[fir_index]*dataArray[fir_ptr];
             }
             
-            
+            IIR_value = IIR_value*iirA+iirB*f_az;
             
             
             
@@ -596,10 +600,12 @@ void APP_Tasks(void) {
                 ;
             }
             if ((sendDataFlag==1) && (dataCounter<100)){
-                    len = sprintf(dataOut, "%d %0.2f %0.2f\r\n", 
+                    len = sprintf(dataOut, "%d %0.2f %0.2f %0.2f\r\n", 
                             dataCounter,
                             f_az,
-                            MAF_value); // send MAF value from here.
+                            MAF_value,
+                            IIR_value,
+                            FIR_value); // send MAF value from here.
                     USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
                         &appData.writeTransferHandle,
                         dataOut, len,
