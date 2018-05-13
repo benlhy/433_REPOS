@@ -570,8 +570,8 @@ void APP_Tasks(void) {
             // pick the last six values in dataArray 
             // actually use a moving array
             int fir_index;
-            for(fir_index = 0; fir_index<6; fir_index++){
-                tempStoreArray[fir_index] = tempStoreArray[fir_index+1]; 
+            for(fir_index = 5; fir_index>0; fir_index--){
+                tempStoreArray[fir_index] = tempStoreArray[fir_index-1]; 
                 //tempStoreArray[fir_index] = tempStoreArray[fir_index+1];
             }
             tempStoreArray[0] = f_az;
@@ -580,8 +580,8 @@ void APP_Tasks(void) {
             FIR_value = 0;
             
             for(fir_index=0;fir_index<6;fir_index++){
-                //FIR_value = FIR_value+firArray[fir_index]*tempStoreArray[fir_index];
-                FIR_value = tempStoreArray[fir_index];
+                FIR_value = FIR_value+firArray[fir_index]*tempStoreArray[fir_index];
+                //FIR_value = tempStoreArray[0];
             }
             
             IIR_value = IIR_value*iirA+iirB*f_az;
