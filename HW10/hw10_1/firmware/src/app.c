@@ -72,6 +72,11 @@ uint8_t APP_MAKE_BUFFER_DMA_READY readBuffer[APP_READ_BUFFER_SIZE];
 int len, i = 0;
 int startTime = 0; // to remember the loop time
 
+#define MAX_X 152
+#define MAX_Y 120
+
+#define IMU_ADDR 0b1101011
+
 #define IMU_ADDR 0b1101011
 #define MULTIPLIER 19.62
 #define MAX_NUM_DATA_ARRAY 20
