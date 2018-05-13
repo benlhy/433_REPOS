@@ -106,7 +106,9 @@ int data_index = 0;
 int maf_index = 0;
 float dataArray[MAX_NUM_DATA_ARRAY]={0}; // zero array..
 float mafArray[MAX_NUM_MAF_ARRAY]={0};
-float firArray[6] = {0.0197, 0.1324, 0.3479, 0.3479, 0.1324, 0.0197};
+float firArray[6] = {0.1667,0.1667,0.1667,0.1667,0.1667,0.1667};
+//float firArray[6] = {0.0197, 0.1324, 0.3479, 0.3479, 0.1324, 0.0197};
+float tempStoreArray[6];
 
 
 // *****************************************************************************
@@ -565,24 +567,21 @@ void APP_Tasks(void) {
             MAF_value = MAF_value/5.0;
             
             
-            // pick the last six values in dataArray
+            // pick the last six values in dataArray 
+            // actually use a moving array
             int fir_index;
-            int fir_ptr;
-            if(data_index-6>0){
-                fir_ptr = data_index-6; // start the pointer here
+            for(fir_index = 0; fir_index<6; fir_index++){
+                tempStoreArray[fir_index] = tempStoreArray[fir_index+1]; 
+                //tempStoreArray[fir_index] = tempStoreArray[fir_index+1];
             }
-            else {
-                fir_ptr = data_index - 6 + MAX_NUM_DATA_ARRAY;
-            }
+            tempStoreArray[0] = f_az;
+            
+
             FIR_value = 0;
+            
             for(fir_index=0;fir_index<6;fir_index++){
-                if (fir_ptr>MAX_NUM_DATA_ARRAY){
-                    fir_ptr = 0;
-                }
-                else {
-                    fir_ptr++;
-                }
-                FIR_value = FIR_value+firArray[fir_index]*dataArray[fir_ptr];
+                //FIR_value = FIR_value+firArray[fir_index]*tempStoreArray[fir_index];
+                FIR_value = tempStoreArray[fir_index];
             }
             
             IIR_value = IIR_value*iirA+iirB*f_az;
