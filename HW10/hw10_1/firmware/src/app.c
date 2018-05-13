@@ -106,8 +106,8 @@ int data_index = 0;
 int maf_index = 0;
 float dataArray[MAX_NUM_DATA_ARRAY]={0}; // zero array..
 float mafArray[MAX_NUM_MAF_ARRAY]={0};
-float firArray[6] = {0.1667,0.1667,0.1667,0.1667,0.1667,0.1667};
-//float firArray[6] = {0.0197, 0.1324, 0.3479, 0.3479, 0.1324, 0.0197};
+//float firArray[6] = {0.1667,0.1667,0.1667,0.1667,0.1667,0.1667};
+float firArray[6] = {0.0197, 0.1324, 0.3479, 0.3479, 0.1324, 0.0197};
 float tempStoreArray[6];
 
 
