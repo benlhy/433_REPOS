@@ -567,7 +567,13 @@ void APP_Tasks(void) {
             
             // pick the last six values in dataArray
             int fir_index;
-            int fir_ptr = data_index; // start the pointer here
+            int fir_ptr;
+            if(data_index-6>0){
+                fir_ptr = data_index-6; // start the pointer here
+            }
+            else {
+                fir_ptr = data_index - 6 + MAX_NUM_DATA_ARRAY;
+            }
             FIR_value = 0;
             for(fir_index=0;fir_index<6;fir_index++){
                 if (fir_ptr>MAX_NUM_DATA_ARRAY){
@@ -604,7 +610,7 @@ void APP_Tasks(void) {
             if (appData.isReadComplete) {
                 ;
             }
-            if ((sendDataFlag==1) && (dataCounter<100)){
+            if ((sendDataFlag==1) && (dataCounter<1000)){
                     len = sprintf(dataOut, "%d %0.2f %0.2f % 0.2f %0.2f\r\n", 
                             dataCounter,
                             f_az,
