@@ -517,15 +517,15 @@ void APP_Tasks(void) {
             ay = imu_data[10] | imu_data [11]<<8;
             az = imu_data[12] | imu_data [13]<<8;
             
-//           sprintf(output,"ax: %0.2f, ay: %0.2f    ",(float)ax/32768.0*MULTIPLIER,(float)ay/32768.0*MULTIPLIER);
-//        drawString(10,8,output,WHITE,BLUE);
-//        sprintf(output,"az: %0.2f   ",(float)az/32768.0*MULTIPLIER);
-//        drawString(10,16,output,WHITE,BLUE);
-//        sprintf(output,"gx: %0.2f, gy: %0.2f   ",(float)gx/32768.0*1000,(float)gy/32768.0*1000);
-//        drawString(10,24,output,WHITE,BLUE);
-//        sprintf(output,"gz: %0.2f   ",(float)gz/32768.0*1000);
-//        drawString(10,32,output,WHITE,BLUE);
-//        output[0]='\0';
+        sprintf(output,"ax: %0.2f, ay: %0.2f    ",(float)ax/32768.0*MULTIPLIER,(float)ay/32768.0*MULTIPLIER);
+        drawString(10,8,output,WHITE,BLUE);
+        sprintf(output,"az: %0.2f   ",(float)az/32768.0*MULTIPLIER);
+        drawString(10,16,output,WHITE,BLUE);
+        sprintf(output,"gx: %0.2f, gy: %0.2f   ",(float)gx/32768.0*1000,(float)gy/32768.0*1000);
+        drawString(10,24,output,WHITE,BLUE);
+        sprintf(output,"gz: %0.2f   ",(float)gz/32768.0*1000);
+        drawString(10,32,output,WHITE,BLUE);
+        output[0]='\0';
             
             
             //len = sprintf(dataOut, "%d\r\n", i);

@@ -484,7 +484,7 @@ void APP_Tasks(void) {
             
             
             if (gotRx) {
-                len = sprintf(dataOut, "got: %d\r\n", rxVal);
+                len = sprintf(dataOut, "got: %d\r\n", rxVal); 
                 i++;
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
                         &appData.writeTransferHandle,
