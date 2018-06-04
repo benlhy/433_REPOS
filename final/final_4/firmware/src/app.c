@@ -89,6 +89,9 @@ unsigned char imu_data[14];
 int val=50;
 int sendDataFlag;
 int dataCounter;
+
+int error_int;
+
 short temp;
 short gx;
 short gy;
@@ -502,10 +505,10 @@ void APP_Tasks(void) {
             /* Check if a character was received or a switch was pressed.
              * The isReadComplete flag gets updated in the CDC event handler. */
 
-             /* WAIT FOR 5HZ TO PASS OR UNTIL A LETTER IS RECEIVED */
+             /* WAIT FOR 1000HZ TO PASS OR UNTIL A LETTER IS RECEIVED */
 
             
-            if (gotRx || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 5)) {
+            if (gotRx || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 1000)) {
                 LATAINV=0b1<<4; // invert state of pin to blink the LED
                 appData.state = APP_STATE_SCHEDULE_WRITE;
             }
@@ -553,11 +556,17 @@ void APP_Tasks(void) {
             drawString(10,24,output,WHITE,BLUE);
             sprintf(output,"gz: %0.2f   ",(float)gz/32768.0*1000);
             drawString(10,32,output,WHITE,BLUE);
+            sprintf(output,"Rx: %d",rxVal);
+            drawString(10,32,output,WHITE,BLUE);
             output[0]='\0';
             
             // How to fuse gyro and accelerometer for orientation
             // can't yaw needs magentometer
             
+            
+            // PI controller
+            // get counts ? 
+            // 
             
 
             
@@ -578,13 +587,17 @@ void APP_Tasks(void) {
                 int left;
                 int right;
                 float kp = 0.5;
+                float ki = 0.2;
                 if (error<0) { // slow down the left motor to steer to the left
                     error  = -error;
-                    left = MAX_DUTY - kp*error;
+                    left = MAX_DUTY - kp*error ;
                     right = MAX_DUTY;
+                    
                     if (left < 0){
                         left = 0;
                     }
+                    
+                    
                 }
                 else { // slow down the right motor to steer to the right
                     right = MAX_DUTY - kp*error;
@@ -592,9 +605,12 @@ void APP_Tasks(void) {
                     if (right<0) {
                         right = 0;
                     }
+                    
                 }
                 
-            } else {
+            } 
+            
+            else {
                 len = sprintf(dataOut, "%d\r\n", i);
                 i++;
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
