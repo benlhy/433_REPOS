@@ -652,6 +652,7 @@ void APP_Tasks(void) {
                 float ki = 0.2;
                 if (error<0) { // slow down the left motor to steer to the left
                     error  = -error;
+                    //left = max_PWM - kp*error-ki*error_int;
                     left = max_PWM - kp*error;
                     right = max_PWM;
                     
@@ -663,12 +664,14 @@ void APP_Tasks(void) {
                 }
                 else { // slow down the right motor to steer to the right
                     right = max_PWM - kp*error;
+                    //right = max_PWM - kp*error-ki*error_int;
                     left = max_PWM;
                     if (right<0) {
                         right = 0;
                     }
                     
                 }
+                // error_int = error+error_int;
                 OC1RS = right;
                 OC4RS = left;
             } 
