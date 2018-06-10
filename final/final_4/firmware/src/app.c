@@ -78,10 +78,10 @@ int rxVal = 0; // a place to store the int that was received
 
 
 #define PWMMAX 2000
-#define TURN 550
-#define FLAT 700
+#define TURN 600
+#define FLAT 600
 #define UP 900
-#define DOWN 400
+#define DOWN 500
 int max_PWM = 500; // maximum current PWM
 
 #define IMU_ADDR 0b1101011
@@ -583,7 +583,7 @@ void APP_Tasks(void) {
             if (ax>6){
                 max_PWM = DOWN; // going downhill
             }
-            if (ax<1){
+            if (ax<0.5){
                 max_PWM = UP; // going uphill
             }
             else {
@@ -591,12 +591,13 @@ void APP_Tasks(void) {
                     max_PWM = FLAT;
                 }
                 else{
-                    if (turn_counter<15){
+                    if (turn_counter<2){
                         turn_counter++;
                         max_PWM = TURN;
                     }
-                    else if(turn_counter>15){
+                    else if(turn_counter>2){
                         // out of turn
+                        max_PWM = FLAT;
                         turn_flag = 0;
                         turn_counter = 0;
                     }
@@ -637,14 +638,14 @@ void APP_Tasks(void) {
                 int left;
                 int right;
                 float kp;
-                if (error>75 || error<-75){
+                if (error>85 || error<-85){
                     if (turn_flag==0){
                         turn_flag = 1;
                         turn_counter = 0;
                     }
                     
                     max_PWM=TURN;
-                    kp=2.5; // sharper turns
+                    kp=1.7; // sharper turns
                 }
                 else{
                     kp=1.7;
