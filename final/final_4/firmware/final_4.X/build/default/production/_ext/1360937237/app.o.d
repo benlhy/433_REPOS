@@ -194,4 +194,5 @@ build/default/production/_ext/1360937237/app.o:  \
  ../../../../../../../../../../microchip/harmony/v2_05_01/framework/usb/usb_cdc.h  \
  ../src/app.h  \
 ../src/imu.h  \
-../src/lcd.h 
+../src/lcd.h  \
+../src/pwm.h 

@@ -2,8 +2,8 @@
 // adapted from https://github.com/sumotoy/TFT_ST7735
 // and https://github.com/adafruit/Adafruit-ST7735-Library
 
-#ifndef ST7735_H__
-#define ST7735_H__
+#ifndef LCD_H__
+#define LCD_H__
 
 // lookup table for all of the ascii characters
 static const char ASCII[96][5] = {

@@ -59,6 +59,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "imu.h"
 #include "lcd.h"
 #include "math.h"
+#include "pwm.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -74,6 +75,14 @@ char rx[64]; // the raw data
 int rxPos = 0; // how much data has been stored
 int gotRx = 0; // the flag
 int rxVal = 0; // a place to store the int that was received
+
+
+#define PWMMAX 2000
+#define TURN 550
+#define FLAT 700
+#define UP 900
+#define DOWN 400
+int max_PWM = 500; // maximum current PWM
 
 #define IMU_ADDR 0b1101011
 #define MULTIPLIER 19.62
@@ -91,6 +100,10 @@ int sendDataFlag;
 int dataCounter;
 
 int error_int;
+int guessingPos;
+
+int turn_flag = 0;
+int turn_counter = 0;
 
 short temp;
 short gx;
@@ -387,9 +400,11 @@ void APP_Initialize(void) {
     LATAbits.LATA4 = 0; //HIGH
     LATBbits.LATB15 = 0; // LOW
     
+    
+    
     TRISB = 0b1<<4; // INIT B4 to input
     
-    
+    PWM_init();
     SPI1_init();
     LCD_init();
     LCD_clearScreen(BLUE);
@@ -397,6 +412,7 @@ void APP_Initialize(void) {
     imu_calibrate();
 
     startTime = _CP0_GET_COUNT();
+    
 }
 
 /******************************************************************************
@@ -556,9 +572,38 @@ void APP_Tasks(void) {
             drawString(10,24,output,WHITE,BLUE);
             sprintf(output,"gz: %0.2f   ",(float)gz/32768.0*1000);
             drawString(10,32,output,WHITE,BLUE);
-            sprintf(output,"Rx: %d",rxVal);
-            drawString(10,32,output,WHITE,BLUE);
+            sprintf(output,"Rx: %d", rxVal);
+            drawString(10,40,output,WHITE,BLUE);
+            sprintf(output,"M1: %0.1f , M2: %0.1f", (float)OC1R/20,(float)OC4R/20);
+            drawString(10,48,output,WHITE,BLUE);
             output[0]='\0';
+            
+            
+            ax = (float)ax/32768.0*MULTIPLIER;
+            if (ax>6){
+                max_PWM = DOWN; // going downhill
+            }
+            if (ax<1){
+                max_PWM = UP; // going uphill
+            }
+            else {
+                if (turn_flag==0){
+                    max_PWM = FLAT;
+                }
+                else{
+                    if (turn_counter<15){
+                        turn_counter++;
+                        max_PWM = TURN;
+                    }
+                    else if(turn_counter>15){
+                        // out of turn
+                        turn_flag = 0;
+                        turn_counter = 0;
+                    }
+                }
+               
+                
+            }
             
             // How to fuse gyro and accelerometer for orientation
             // can't yaw needs magentometer
@@ -582,16 +627,33 @@ void APP_Tasks(void) {
                 gotRx = 0;
                 
                 // compute error
+                guessingPos = 0.5*rxVal+ guessingPos*0.5; // some filtering
+                int error;
                 
-                int error = rxVal - 240; // 240 means the dot is in the middle of the screen
+                
+                error = rxVal - 314; // 314 means the dot is in the middle of the screen
+                
+                
                 int left;
                 int right;
-                float kp = 0.5;
+                float kp;
+                if (error>75 || error<-75){
+                    if (turn_flag==0){
+                        turn_flag = 1;
+                        turn_counter = 0;
+                    }
+                    
+                    max_PWM=TURN;
+                    kp=2.5; // sharper turns
+                }
+                else{
+                    kp=1.7;
+                }
                 float ki = 0.2;
                 if (error<0) { // slow down the left motor to steer to the left
                     error  = -error;
-                    left = MAX_DUTY - kp*error ;
-                    right = MAX_DUTY;
+                    left = max_PWM - kp*error;
+                    right = max_PWM;
                     
                     if (left < 0){
                         left = 0;
@@ -600,23 +662,27 @@ void APP_Tasks(void) {
                     
                 }
                 else { // slow down the right motor to steer to the right
-                    right = MAX_DUTY - kp*error;
-                    left = MAX_DUTY;
+                    right = max_PWM - kp*error;
+                    left = max_PWM;
                     if (right<0) {
                         right = 0;
                     }
                     
                 }
-                
+                OC1RS = right;
+                OC4RS = left;
             } 
             
             else {
+                
                 len = sprintf(dataOut, "%d\r\n", i);
                 i++;
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
                         &appData.writeTransferHandle, dataOut, len,
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+                 
                 startTime = _CP0_GET_COUNT();
+                 
             }
             
             break;
