@@ -78,10 +78,11 @@ int rxVal = 0; // a place to store the int that was received
 
 
 #define PWMMAX 2000
-#define TURN 600
-#define FLAT 600
-#define UP 900
+#define TURN 700
+#define FLAT 900
+#define UP 1000
 #define DOWN 500
+#define TURN_COUNTER 10
 int max_PWM = 500; // maximum current PWM
 
 #define IMU_ADDR 0b1101011
@@ -93,11 +94,14 @@ int max_PWM = 500; // maximum current PWM
 
 
 
+
 char output[30];
 unsigned char imu_data[14];
 int val=50;
 int sendDataFlag;
 int dataCounter;
+
+int lastRx;
 
 int error_int;
 int guessingPos;
@@ -116,6 +120,15 @@ short az;
 float f_az;
 float f_ay;
 float f_ax;
+
+int myabs(int a){
+    if (a>=0){
+        return a;
+    }
+    else if(a<0){
+        return -a;
+    }
+}
 
 // *****************************************************************************
 /* Application Data
@@ -576,6 +589,8 @@ void APP_Tasks(void) {
             drawString(10,40,output,WHITE,BLUE);
             sprintf(output,"M1: %0.1f , M2: %0.1f", (float)OC1R/20,(float)OC4R/20);
             drawString(10,48,output,WHITE,BLUE);
+            sprintf(output,"tf: %d, tc: %d ",turn_flag, turn_counter);
+            drawString(10,56,output,WHITE,BLUE);
             output[0]='\0';
             
             
@@ -583,7 +598,7 @@ void APP_Tasks(void) {
             if (ax>6){
                 max_PWM = DOWN; // going downhill
             }
-            if (ax<0.5){
+            if (ax<-0.5){
                 max_PWM = UP; // going uphill
             }
             else {
@@ -591,13 +606,13 @@ void APP_Tasks(void) {
                     max_PWM = FLAT;
                 }
                 else{
-                    if (turn_counter<2){
+                    if (turn_counter<TURN_COUNTER){
                         turn_counter++;
                         max_PWM = TURN;
                     }
-                    else if(turn_counter>2){
-                        // out of turn
-                        max_PWM = FLAT;
+                    else if(turn_counter==TURN_COUNTER){
+                        // out of turn, keep the PWM turn first.
+                        
                         turn_flag = 0;
                         turn_counter = 0;
                     }
@@ -631,6 +646,12 @@ void APP_Tasks(void) {
                 guessingPos = 0.5*rxVal+ guessingPos*0.5; // some filtering
                 int error;
                 
+                if (rxVal==0){ //shit data
+                    rxVal = lastRx;
+                }
+                else{ // okay update our last Rx value
+                    lastRx = rxVal;
+                }
                 
                 error = rxVal - 314; // 314 means the dot is in the middle of the screen
                 
@@ -643,11 +664,13 @@ void APP_Tasks(void) {
                         turn_flag = 1;
                         turn_counter = 0;
                     }
-                    
                     max_PWM=TURN;
-                    kp=1.7; // sharper turns
+                    kp=1.9; // sharper turns
                 }
                 else{
+                    if (turn_flag==0){
+                        max_PWM=max_PWM-2*myabs(error);
+                    }
                     kp=1.7;
                 }
                 float ki = 0.2;
