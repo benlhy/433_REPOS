@@ -279,7 +279,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChanged = progress;
-                slidevalue = progress/3;
+                slidevalue = progress/2;
                 //slidevalue = 20;
                 myTextView.setText("The value is: "+progress);
             }
@@ -300,7 +300,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPreviewSize(640, 480);
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY); // no autofocusing
-        parameters.setAutoExposureLock(true); // keep the white balance constant
+        parameters.setExposureCompensation(-1);
+        parameters.setAutoExposureLock(false); // keep the white balance constant
+
         //parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH); // Turn on LED
         mCamera.setParameters(parameters);
         mCamera.setDisplayOrientation(90); // rotate to portrait mode

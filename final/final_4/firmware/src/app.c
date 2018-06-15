@@ -80,7 +80,7 @@ int rxVal = 0; // a place to store the int that was received
 #define PWMMAX 2000
 #define TURN 700
 #define FLAT 900
-#define UP 1000
+#define UP 1200
 #define DOWN 500
 #define TURN_COUNTER 10
 int max_PWM = 500; // maximum current PWM
@@ -108,6 +108,7 @@ int guessingPos;
 
 int turn_flag = 0;
 int turn_counter = 0;
+int up_count = 0;
 
 short temp;
 short gx;
@@ -599,9 +600,13 @@ void APP_Tasks(void) {
                 max_PWM = DOWN; // going downhill
             }
             if (ax<-0.5){
-                max_PWM = UP; // going uphill
+                up_count++;
+                if (up_count>3){
+                    max_PWM = UP; // going uphill
+                }
             }
             else {
+                up_count=0;
                 if (turn_flag==0){
                     max_PWM = FLAT;
                 }
@@ -647,7 +652,7 @@ void APP_Tasks(void) {
                 int error;
                 
                 if (rxVal==0){ //shit data
-                    rxVal = lastRx;
+                    rxVal = 1.5*lastRx;
                 }
                 else{ // okay update our last Rx value
                     lastRx = rxVal;
@@ -669,6 +674,7 @@ void APP_Tasks(void) {
                 }
                 else{
                     if (turn_flag==0){
+                       
                         max_PWM=max_PWM-2*myabs(error);
                     }
                     kp=1.7;
